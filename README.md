@@ -21,16 +21,16 @@ business-requirements .xlsx
 ## Install
 
 ```text
-/plugin marketplace add socotra/socotra-config-toolkit
+/plugin marketplace add joshlawrence-web/socotra-config-toolkit
 /plugin install socotra-config-toolkit@socotra
 ```
 
-Replace `socotra/socotra-config-toolkit` with your own `owner/repo` if you fork it. The first command registers this repository as a plugin marketplace; the second installs the bundled plugin. Restart or `/plugin` to confirm the skills loaded.
+Replace `joshlawrence-web/socotra-config-toolkit` with your own `owner/repo` if you fork it. The first command registers this repository as a plugin marketplace; the second installs the bundled plugin. Restart or `/plugin` to confirm the skills loaded.
 
 You can also install directly with the CLI:
 
 ```bash
-claude plugin marketplace add socotra/socotra-config-toolkit
+claude plugin marketplace add joshlawrence-web/socotra-config-toolkit
 claude plugin install socotra-config-toolkit@socotra
 ```
 
