@@ -1,0 +1,23 @@
+{
+  "name": "socotra-config-toolkit",
+  "displayName": "Socotra Config Toolkit",
+  "version": "0.1.0",
+  "description": "End-to-end toolchain for Socotra Enterprise Core: turn business-requirements spreadsheets into deployable product configs and rate tables, write valid rating/validation/underwriting Java plugins, and verify them locally before deploy.",
+  "author": {
+    "name": "Josh Lawrence",
+    "email": "josh.lawrence@socotra.com"
+  },
+  "homepage": "https://github.com/socotra/socotra-config-toolkit",
+  "repository": "https://github.com/socotra/socotra-config-toolkit",
+  "license": "MIT",
+  "keywords": [
+    "socotra",
+    "insurance",
+    "enterprise-core",
+    "rating",
+    "config",
+    "xlsx",
+    "java-plugin"
+  ],
+  "skills": "./skills/"
+}

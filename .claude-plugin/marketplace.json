@@ -1,0 +1,23 @@
+{
+  "name": "socotra",
+  "description": "Socotra Enterprise Core tooling for Claude Code.",
+  "owner": {
+    "name": "Josh Lawrence",
+    "email": "josh.lawrence@socotra.com"
+  },
+  "plugins": [
+    {
+      "name": "socotra-config-toolkit",
+      "source": ".",
+      "description": "End-to-end Socotra EC toolchain: xlsx → config + rate tables → Java plugins → local verify.",
+      "version": "0.1.0",
+      "license": "MIT",
+      "keywords": [
+        "socotra",
+        "insurance",
+        "rating",
+        "config"
+      ]
+    }
+  ]
+}

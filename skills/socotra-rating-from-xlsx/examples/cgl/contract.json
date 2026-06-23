@@ -1,0 +1,116 @@
+{
+  "declared": {
+    "inputs": {
+      "state": "location.data().state()",
+      "grossSales": "location.data().annualGrossSales()"
+    },
+    "tables": {
+      "BaseRate": {
+        "type": "exact",
+        "keys": [
+          "state"
+        ],
+        "values": [
+          "ratePer1000"
+        ],
+        "on_miss": "error"
+      }
+    },
+    "charges": {
+      "Premium": [
+        {
+          "element": "BodilyInjury",
+          "handling": "rate"
+        },
+        {
+          "element": "MedicalPayments",
+          "handling": "amount"
+        }
+      ],
+      "Fee": [
+        {
+          "element": "WaiverOfSubro",
+          "handling": "amount"
+        }
+      ]
+    }
+  },
+  "rules": [
+    {
+      "product": "",
+      "element": "BodilyInjury",
+      "charge": "Premium",
+      "handling": "rate",
+      "formula": "BaseRate[state] * (grossSales/1000)",
+      "notes": "look up the state's rate, multiply by sales in thousands",
+      "errors": [],
+      "warnings": [],
+      "ast": {
+        "node": "bin",
+        "op": "*",
+        "l": {
+          "node": "lookup",
+          "table": "BaseRate",
+          "keys": [
+            {
+              "node": "var",
+              "name": "state"
+            }
+          ],
+          "col": null
+        },
+        "r": {
+          "node": "bin",
+          "op": "/",
+          "l": {
+            "node": "var",
+            "name": "grossSales"
+          },
+          "r": {
+            "node": "num",
+            "value": "1000"
+          }
+        }
+      },
+      "vars_used": [
+        "grossSales",
+        "state"
+      ],
+      "tables_used": [
+        "BaseRate"
+      ]
+    },
+    {
+      "product": "",
+      "element": "MedicalPayments",
+      "charge": "Premium",
+      "handling": "amount",
+      "formula": "150.00",
+      "notes": "flat med-pay premium",
+      "errors": [],
+      "warnings": [],
+      "ast": {
+        "node": "num",
+        "value": "150.00"
+      },
+      "vars_used": [],
+      "tables_used": []
+    },
+    {
+      "product": "",
+      "element": "WaiverOfSubro",
+      "charge": "Fee",
+      "handling": "amount",
+      "formula": "250.00",
+      "notes": "flat waiver-of-subrogation fee",
+      "errors": [],
+      "warnings": [],
+      "ast": {
+        "node": "num",
+        "value": "250.00"
+      },
+      "vars_used": [],
+      "tables_used": []
+    }
+  ]
+}

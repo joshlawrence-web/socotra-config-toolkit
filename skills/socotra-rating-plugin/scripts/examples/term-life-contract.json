@@ -1,0 +1,434 @@
+{
+  "config_dir": "/Users/joshualawrence/Projects/All_EC_Demo_configs/term-life",
+  "concrete_products": [
+    "TermLife10Level",
+    "TermLife15Level",
+    "TermLife20Level",
+    "TermLife30Level"
+  ],
+  "abstract_products": [
+    "TermLifeBase"
+  ],
+  "charges_defined": {
+    "fees": {
+      "name": "fees",
+      "configured": true,
+      "category": "fee",
+      "handling": "normal",
+      "handling_explicit": false,
+      "invoicing": "scheduled",
+      "ratingitem_method": ".rate(value)",
+      "chargetype_constant": "ChargeType.fees"
+    },
+    "premium": {
+      "name": "premium",
+      "configured": true,
+      "category": "premium",
+      "handling": "normal",
+      "handling_explicit": false,
+      "invoicing": "scheduled",
+      "ratingitem_method": ".rate(value)",
+      "chargetype_constant": "ChargeType.premium"
+    }
+  },
+  "tables": [
+    {
+      "name": "ADBRates",
+      "key_columns": [
+        "issueAge"
+      ],
+      "value_columns": [
+        "male",
+        "female"
+      ],
+      "value_types": {
+        "male": "decimal",
+        "female": "decimal"
+      },
+      "selection_time_basis": "termStartTime",
+      "is_range": false,
+      "makekey": "ADBRates.makeKey(issueAge)"
+    },
+    {
+      "name": "BaseRates",
+      "key_columns": [
+        "sex",
+        "age"
+      ],
+      "value_columns": [
+        "rate"
+      ],
+      "value_types": {
+        "rate": "decimal"
+      },
+      "selection_time_basis": "termStartTime",
+      "is_range": false,
+      "makekey": "BaseRates.makeKey(sex, age)"
+    },
+    {
+      "name": "Fees",
+      "key_columns": [
+        "feeType"
+      ],
+      "value_columns": [
+        "value"
+      ],
+      "value_types": {
+        "value": "int"
+      },
+      "selection_time_basis": "termStartTime",
+      "is_range": false,
+      "makekey": "Fees.makeKey(feeType)"
+    },
+    {
+      "name": "Modality",
+      "key_columns": [
+        "mode"
+      ],
+      "value_columns": [
+        "value"
+      ],
+      "value_types": {
+        "value": "decimal"
+      },
+      "selection_time_basis": "termStartTime",
+      "is_range": false,
+      "makekey": "Modality.makeKey(mode)"
+    }
+  ],
+  "products": [
+    {
+      "name": "TermLife10Level",
+      "display_name": "Term Life 10 Year Level Premium",
+      "candidate_overloads": [
+        "rate(TermLife10LevelQuoteRequest request)",
+        "rate(TermLife10LevelQuickQuoteRequest request)",
+        "rate(TermLife10LevelRequest request)  # segment/transaction level; request.segment() is Optional"
+      ],
+      "elements": [
+        {
+          "kind": "product",
+          "config_name": "TermLife10Level",
+          "accessor_path": "quote  (or segment)",
+          "locator_accessor": "quote.locator()  /  segment.locator()",
+          "modifier": "root element",
+          "charges": [],
+          "charges_declared": false
+        },
+        {
+          "kind": "exposure",
+          "config_name": "insured",
+          "accessor_path": "quote.insured()",
+          "locator_accessor": "quote.insured().locator()",
+          "modifier": "single, required",
+          "charges": [],
+          "charges_declared": false
+        },
+        {
+          "kind": "coverage",
+          "config_name": "termInsurance",
+          "accessor_path": "quote.insured().termInsurance()",
+          "locator_accessor": "quote.insured().termInsurance().locator()",
+          "modifier": "optional (nullable child record -> null-check before charging)",
+          "charges": [],
+          "charges_declared": false
+        },
+        {
+          "kind": "coverage",
+          "config_name": "accidentalDeathBenefit",
+          "accessor_path": "quote.insured().accidentalDeathBenefit()",
+          "locator_accessor": "quote.insured().accidentalDeathBenefit().locator()",
+          "modifier": "optional (nullable child record -> null-check before charging)",
+          "charges": [],
+          "charges_declared": false
+        },
+        {
+          "kind": "coverage",
+          "config_name": "waiverOfPremium",
+          "accessor_path": "quote.insured().waiverOfPremium()",
+          "locator_accessor": "quote.insured().waiverOfPremium().locator()",
+          "modifier": "optional (nullable child record -> null-check before charging)",
+          "charges": [],
+          "charges_declared": false
+        },
+        {
+          "kind": "coverage",
+          "config_name": "terminalIllness",
+          "accessor_path": "quote.insured().terminalIllness()",
+          "locator_accessor": "quote.insured().terminalIllness().locator()",
+          "modifier": "optional (nullable child record -> null-check before charging)",
+          "charges": [],
+          "charges_declared": false
+        },
+        {
+          "kind": "exposure",
+          "config_name": "child",
+          "accessor_path": "quote.child()",
+          "locator_accessor": "quote.child().locator()",
+          "modifier": "optional (nullable child record -> null-check before charging)",
+          "charges": [],
+          "charges_declared": false
+        },
+        {
+          "kind": "coverage",
+          "config_name": "childTermRider",
+          "accessor_path": "quote.child().childTermRider()",
+          "locator_accessor": "quote.child().childTermRider().locator()",
+          "modifier": "optional (nullable child record -> null-check before charging)",
+          "charges": [],
+          "charges_declared": false
+        }
+      ]
+    },
+    {
+      "name": "TermLife15Level",
+      "display_name": "Term Life 15 Year Level Premium",
+      "candidate_overloads": [
+        "rate(TermLife15LevelQuoteRequest request)",
+        "rate(TermLife15LevelQuickQuoteRequest request)",
+        "rate(TermLife15LevelRequest request)  # segment/transaction level; request.segment() is Optional"
+      ],
+      "elements": [
+        {
+          "kind": "product",
+          "config_name": "TermLife15Level",
+          "accessor_path": "quote  (or segment)",
+          "locator_accessor": "quote.locator()  /  segment.locator()",
+          "modifier": "root element",
+          "charges": [],
+          "charges_declared": false
+        },
+        {
+          "kind": "exposure",
+          "config_name": "insured",
+          "accessor_path": "quote.insured()",
+          "locator_accessor": "quote.insured().locator()",
+          "modifier": "single, required",
+          "charges": [],
+          "charges_declared": false
+        },
+        {
+          "kind": "coverage",
+          "config_name": "termInsurance",
+          "accessor_path": "quote.insured().termInsurance()",
+          "locator_accessor": "quote.insured().termInsurance().locator()",
+          "modifier": "optional (nullable child record -> null-check before charging)",
+          "charges": [],
+          "charges_declared": false
+        },
+        {
+          "kind": "coverage",
+          "config_name": "accidentalDeathBenefit",
+          "accessor_path": "quote.insured().accidentalDeathBenefit()",
+          "locator_accessor": "quote.insured().accidentalDeathBenefit().locator()",
+          "modifier": "optional (nullable child record -> null-check before charging)",
+          "charges": [],
+          "charges_declared": false
+        },
+        {
+          "kind": "coverage",
+          "config_name": "waiverOfPremium",
+          "accessor_path": "quote.insured().waiverOfPremium()",
+          "locator_accessor": "quote.insured().waiverOfPremium().locator()",
+          "modifier": "optional (nullable child record -> null-check before charging)",
+          "charges": [],
+          "charges_declared": false
+        },
+        {
+          "kind": "coverage",
+          "config_name": "terminalIllness",
+          "accessor_path": "quote.insured().terminalIllness()",
+          "locator_accessor": "quote.insured().terminalIllness().locator()",
+          "modifier": "optional (nullable child record -> null-check before charging)",
+          "charges": [],
+          "charges_declared": false
+        },
+        {
+          "kind": "exposure",
+          "config_name": "child",
+          "accessor_path": "quote.child()",
+          "locator_accessor": "quote.child().locator()",
+          "modifier": "optional (nullable child record -> null-check before charging)",
+          "charges": [],
+          "charges_declared": false
+        },
+        {
+          "kind": "coverage",
+          "config_name": "childTermRider",
+          "accessor_path": "quote.child().childTermRider()",
+          "locator_accessor": "quote.child().childTermRider().locator()",
+          "modifier": "optional (nullable child record -> null-check before charging)",
+          "charges": [],
+          "charges_declared": false
+        }
+      ]
+    },
+    {
+      "name": "TermLife20Level",
+      "display_name": "Term Life 20 Year Level Premium",
+      "candidate_overloads": [
+        "rate(TermLife20LevelQuoteRequest request)",
+        "rate(TermLife20LevelQuickQuoteRequest request)",
+        "rate(TermLife20LevelRequest request)  # segment/transaction level; request.segment() is Optional"
+      ],
+      "elements": [
+        {
+          "kind": "product",
+          "config_name": "TermLife20Level",
+          "accessor_path": "quote  (or segment)",
+          "locator_accessor": "quote.locator()  /  segment.locator()",
+          "modifier": "root element",
+          "charges": [],
+          "charges_declared": false
+        },
+        {
+          "kind": "exposure",
+          "config_name": "insured",
+          "accessor_path": "quote.insured()",
+          "locator_accessor": "quote.insured().locator()",
+          "modifier": "single, required",
+          "charges": [],
+          "charges_declared": false
+        },
+        {
+          "kind": "coverage",
+          "config_name": "termInsurance",
+          "accessor_path": "quote.insured().termInsurance()",
+          "locator_accessor": "quote.insured().termInsurance().locator()",
+          "modifier": "optional (nullable child record -> null-check before charging)",
+          "charges": [],
+          "charges_declared": false
+        },
+        {
+          "kind": "coverage",
+          "config_name": "accidentalDeathBenefit",
+          "accessor_path": "quote.insured().accidentalDeathBenefit()",
+          "locator_accessor": "quote.insured().accidentalDeathBenefit().locator()",
+          "modifier": "optional (nullable child record -> null-check before charging)",
+          "charges": [],
+          "charges_declared": false
+        },
+        {
+          "kind": "coverage",
+          "config_name": "waiverOfPremium",
+          "accessor_path": "quote.insured().waiverOfPremium()",
+          "locator_accessor": "quote.insured().waiverOfPremium().locator()",
+          "modifier": "optional (nullable child record -> null-check before charging)",
+          "charges": [],
+          "charges_declared": false
+        },
+        {
+          "kind": "coverage",
+          "config_name": "terminalIllness",
+          "accessor_path": "quote.insured().terminalIllness()",
+          "locator_accessor": "quote.insured().terminalIllness().locator()",
+          "modifier": "optional (nullable child record -> null-check before charging)",
+          "charges": [],
+          "charges_declared": false
+        },
+        {
+          "kind": "exposure",
+          "config_name": "child",
+          "accessor_path": "quote.child()",
+          "locator_accessor": "quote.child().locator()",
+          "modifier": "optional (nullable child record -> null-check before charging)",
+          "charges": [],
+          "charges_declared": false
+        },
+        {
+          "kind": "coverage",
+          "config_name": "childTermRider",
+          "accessor_path": "quote.child().childTermRider()",
+          "locator_accessor": "quote.child().childTermRider().locator()",
+          "modifier": "optional (nullable child record -> null-check before charging)",
+          "charges": [],
+          "charges_declared": false
+        }
+      ]
+    },
+    {
+      "name": "TermLife30Level",
+      "display_name": "Term Life 30 Year Level Premium",
+      "candidate_overloads": [
+        "rate(TermLife30LevelQuoteRequest request)",
+        "rate(TermLife30LevelQuickQuoteRequest request)",
+        "rate(TermLife30LevelRequest request)  # segment/transaction level; request.segment() is Optional"
+      ],
+      "elements": [
+        {
+          "kind": "product",
+          "config_name": "TermLife30Level",
+          "accessor_path": "quote  (or segment)",
+          "locator_accessor": "quote.locator()  /  segment.locator()",
+          "modifier": "root element",
+          "charges": [],
+          "charges_declared": false
+        },
+        {
+          "kind": "exposure",
+          "config_name": "insured",
+          "accessor_path": "quote.insured()",
+          "locator_accessor": "quote.insured().locator()",
+          "modifier": "single, required",
+          "charges": [],
+          "charges_declared": false
+        },
+        {
+          "kind": "coverage",
+          "config_name": "termInsurance",
+          "accessor_path": "quote.insured().termInsurance()",
+          "locator_accessor": "quote.insured().termInsurance().locator()",
+          "modifier": "optional (nullable child record -> null-check before charging)",
+          "charges": [],
+          "charges_declared": false
+        },
+        {
+          "kind": "coverage",
+          "config_name": "accidentalDeathBenefit",
+          "accessor_path": "quote.insured().accidentalDeathBenefit()",
+          "locator_accessor": "quote.insured().accidentalDeathBenefit().locator()",
+          "modifier": "optional (nullable child record -> null-check before charging)",
+          "charges": [],
+          "charges_declared": false
+        },
+        {
+          "kind": "coverage",
+          "config_name": "waiverOfPremium",
+          "accessor_path": "quote.insured().waiverOfPremium()",
+          "locator_accessor": "quote.insured().waiverOfPremium().locator()",
+          "modifier": "optional (nullable child record -> null-check before charging)",
+          "charges": [],
+          "charges_declared": false
+        },
+        {
+          "kind": "coverage",
+          "config_name": "terminalIllness",
+          "accessor_path": "quote.insured().terminalIllness()",
+          "locator_accessor": "quote.insured().terminalIllness().locator()",
+          "modifier": "optional (nullable child record -> null-check before charging)",
+          "charges": [],
+          "charges_declared": false
+        },
+        {
+          "kind": "exposure",
+          "config_name": "child",
+          "accessor_path": "quote.child()",
+          "locator_accessor": "quote.child().locator()",
+          "modifier": "optional (nullable child record -> null-check before charging)",
+          "charges": [],
+          "charges_declared": false
+        },
+        {
+          "kind": "coverage",
+          "config_name": "childTermRider",
+          "accessor_path": "quote.child().childTermRider()",
+          "locator_accessor": "quote.child().childTermRider().locator()",
+          "modifier": "optional (nullable child record -> null-check before charging)",
+          "charges": [],
+          "charges_declared": false
+        }
+      ]
+    }
+  ],
+  "catalog_cross_checked": false
+}
