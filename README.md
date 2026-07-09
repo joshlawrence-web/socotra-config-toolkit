@@ -44,7 +44,7 @@ flowchart TD
         VD["socotra-verify-deploy<br/><i>compile vs generated config jar</i>"]
     end
 
-    EXT(["socotra-config / socotra-plugin<br/><i>external schema skills</i>"]):::ext
+    EXT(["socotra-config<br/><i>full schema — optional</i>"]):::ext
 
     XLSX --> XE
     XE --> CFX
@@ -70,7 +70,7 @@ Read it in layers: **read** the spreadsheet → **transform** it into config + r
 | --- | --- | --- |
 | `xlsx-extract` | — *(leaf; everything reading a workbook starts here)* | — |
 | `socotra-jar-building-block` | — *(foundation for the Java skills)* | — |
-| `socotra-config-from-xlsx` | — | `xlsx-extract`, external `socotra-config` |
+| `socotra-config-from-xlsx` | — | `xlsx-extract` *(carries its own schema slice; external `socotra-config` optional for uncovered sections)* |
 | `socotra-rating-from-xlsx` | `socotra-rating-plugin`, `socotra-verify-deploy` | `xlsx-extract`, external `socotra-config` |
 | `socotra-rating-plugin` | `socotra-verify-deploy` | `socotra-jar-building-block`, external `socotra-config` |
 | `socotra-verify-deploy` | — *(terminal check)* | `socotra-jar-building-block`, external `socotra-config` |
@@ -81,7 +81,7 @@ Two skills are **foundations** that nothing depends on upward — `xlsx-extract`
 
 > *"Here's the CGL requirements workbook — build me the config, the rater, and make sure it compiles."*
 
-1. `socotra-config-from-xlsx` calls `xlsx-extract` to read the tabs, then emits a `socotra-config/` tree (shape governed by the external `socotra-config` schema).
+1. `socotra-config-from-xlsx` calls `xlsx-extract` to read the tabs, then emits a `socotra-config/` tree (shape governed by its own `references/config-schema.md`).
 2. `socotra-rating-from-xlsx` reads the rating tabs and produces rate‑table CSVs + an auditable rating contract.
 3. `socotra-rating-plugin` turns that contract into a valid `RatePlugin`, using `socotra-jar-building-block` to get the signatures and overloads right.
 4. `socotra-verify-deploy` compiles the plugin against the generated `customer-config.jar` — errors caught locally, no tenant round‑trip.
@@ -103,12 +103,24 @@ Invoke explicitly as `/socotra-config-toolkit:<skill>`, or let Claude pick them 
 
 ## Companions
 
-These skills reference, but do **not** bundle, two schema‑authority skills that ship in Socotra's `socotra-configuration` plugin:
+The toolkit is **self-sufficient for the common config-authoring path**. The per‑entity
+JSON schema slice that `socotra-config-from-xlsx` maps workbook tabs onto — entity shapes,
+data types, quantifiers, platform fields, charges, coverage terms, numbering/installment
+plans, and rating `tables/` — lives in
+[`skills/socotra-config-from-xlsx/references/config-schema.md`](skills/socotra-config-from-xlsx/references/config-schema.md).
+The `*-from-xlsx` skills point at it; you no longer need an external plugin to author a
+standard config from a requirements workbook.
 
-- **`socotra-config`** — the authoritative per‑entity JSON schema for product configs. The `*-from-xlsx` and `socotra-rating-plugin` skills defer to it for shape rather than restating it.
-- **`socotra-plugin`** — Java plugin templates and SDK setup.
+Two schema‑authority skills ship in Socotra's separate `socotra-configuration` plugin and
+remain **optional enrichment**, not a hard dependency:
 
-The toolkit degrades gracefully without them (it just can't lean on the canonical schema), but installing both gives Claude the complete picture.
+- **`socotra-config`** — the *full* per‑entity JSON schema (every section, including the
+  ones the distilled slice skips: automations, FNOL, work-management, disbursements,
+  policy lines, etc.). Install it when a config needs a section the slice doesn't cover.
+- **`socotra-plugin`** — Java plugin templates and SDK setup. **Not folded in**: the
+  toolkit's `socotra-jar-building-block` + `socotra-rating-plugin` already cover the Java
+  path, so no skill here hard-leans on it. Install it only if you want its ready-made
+  plugin scaffolds.
 
 ## Repository layout
 

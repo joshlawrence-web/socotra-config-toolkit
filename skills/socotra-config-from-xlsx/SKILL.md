@@ -1,16 +1,16 @@
 ---
 name: socotra-config-from-xlsx
-description: Turn a Socotra "Config Template" Excel workbook into a deployable socotra-config. Bridges three things — the xlsx-extract skill (reads the file), this skill (maps tabs/columns → config entities and records the transform rules that make validateConfig pass), and the socotra-config skill (authoritative JSON schema). Use whenever a user hands you a Socotra business-requirements .xlsx and asks for a config. IMPORTANT: the template layout is NOT a contract — re-verify it against the actual file every time before trusting the mapping below.
+description: Turn a Socotra "Config Template" Excel workbook into a deployable socotra-config. Bridges the xlsx-extract skill (reads the file) with this skill, which maps tabs/columns → config entities, carries the per-entity JSON schema for the common path (references/config-schema.md), and records the transform rules that make validateConfig pass. Use whenever a user hands you a Socotra business-requirements .xlsx and asks for a config. IMPORTANT: the template layout is NOT a contract — re-verify it against the actual file every time before trusting the mapping below.
 ---
 
 # socotra-config-from-xlsx
 
 Convert a Socotra **Config Template** workbook into a `socotra-config/` tree that passes `./gradlew validateConfig`.
 
-This skill is the **bridge**, not a parser and not the schema:
+This skill is the **bridge** plus the schema slice it needs — not a parser:
 
 - **Read the file** → use the `xlsx-extract` skill (`python3 ~/.claude/skills/xlsx-extract/xlsx_extract.py FILE.xlsx --comments`). Don't hand-parse XML; don't reach for openpyxl.
-- **Shape the JSON** → use the `socotra-config` skill (it owns the per-entity schema, quantifiers, platform fields). This skill does **not** restate that schema.
+- **Shape the JSON** → `references/config-schema.md` in this skill owns the per-entity shapes, data types, quantifiers, and platform fields for the common config-authoring path. Consult it for the exact JSON of each entity below. *(For a section it doesn't cover — automations, FNOL, work-management, and the like — the external `socotra-config` skill is the full authority, if installed.)*
 - **Map between them** → this document: which tab feeds which entity, and the transform rules that turn human cells into valid config.
 
 ## ⚠️ Step 0 — re-verify the template before trusting anything below
@@ -33,7 +33,7 @@ If drift is material, derive the mapping from the live headers and **tell the us
 
 ## Tab → entity map (last known good)
 
-The workbook is one row = one entity. Names are PascalCase; quantifier suffixes (`! ? + *`, blank) come straight from the cells.
+The workbook is one row = one entity. Names are PascalCase; quantifier suffixes (`! ? + *`, blank) come straight from the cells. For each entity below, `references/config-schema.md` has the exact `config.json` shape and constraints.
 
 | Tab (by name) | Produces | socotra-config location |
 |---|---|---|
@@ -82,7 +82,7 @@ Write the tree under **`socotra-config/`** at the project root. That is what the
 - Part A defines the term (`type`, display, used-on, default option key prefixed `*`). Part B lists each option (key, display, numeric value).
 - **Option keys must be lowercase** snake/`o_1000000`-style — `O_1000000` fails name-format validation. Lowercase the default key too.
 - A term marked **auto-created (`!`)** on its coverage needs a **default option** (`*`). If Part A gives no default and the options include an "Excluded" choice, default to `*..._excluded`. If a term has a single implied option (default key but no Part B rows), synthesize that one option from the key/value.
-- The template's `type` may say `other` (e.g. ERP, Credit Monitoring). The socotra-config schema documents `limit`/`deductible`; if `other` is rejected by validation, model it as a `limit` with explicit options (e.g. excluded/included or year choices). Verify against the live schema rather than assuming.
+- The template's `type` may say `other` (e.g. ERP, Credit Monitoring). `references/config-schema.md` documents only `limit`/`deductible`; if `other` is rejected by validation, model it as a `limit` with explicit options (e.g. excluded/included or year choices). Verify against the live schema rather than assuming.
 
 ### 8 - Data Fields
 - Group rows by `Parent Entity` + `Entity Type` and merge into that entity's `data{}`.

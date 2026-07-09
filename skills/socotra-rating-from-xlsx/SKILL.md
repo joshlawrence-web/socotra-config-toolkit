@@ -1,6 +1,6 @@
 ---
 name: socotra-rating-from-xlsx
-description: Turn a filled-out Socotra "Rating workbook" (.xlsx) into a deployable rater — rate-table CSVs plus a RatePlugin — for the active socotra-config. Bridges four things: the xlsx-extract skill (reads the file), this skill (defines the config-agnostic rating workbook format + a readable formula DSL and parses it into an auditable rating contract), the socotra-rating-plugin skill (turns the contract into valid BigDecimal Java), and the socotra-config schema (rate tables). Use whenever a user hands you a Socotra rating spreadsheet — or needs the blank framework to fill one out. The workbook layout is NOT a contract — re-verify it against the actual file every time.
+description: Turn a filled-out Socotra "Rating workbook" (.xlsx) into a deployable rater — rate-table CSVs plus a RatePlugin — for the active socotra-config. Bridges four things: the xlsx-extract skill (reads the file), this skill (defines the config-agnostic rating workbook format + a readable formula DSL and parses it into an auditable rating contract), the socotra-rating-plugin skill (turns the contract into valid BigDecimal Java), and the rate-table schema (distilled in the sibling socotra-config-from-xlsx skill's references/config-schema.md). Use whenever a user hands you a Socotra rating spreadsheet — or needs the blank framework to fill one out. The workbook layout is NOT a contract — re-verify it against the actual file every time.
 ---
 
 # socotra-rating-from-xlsx
@@ -12,7 +12,7 @@ format and the DSL, not the file parsing and not the Java.
 
 - **Read the file** → `xlsx-extract` skill (`python3 ~/.claude/skills/xlsx-extract/xlsx_extract.py FILE.xlsx`). Never hand-parse XML; never reach for openpyxl.
 - **Write the Java** → `socotra-rating-plugin` skill. It owns the `RatePlugin` contract — `.rate()` vs `.amount()`, legal `(element, charge)` pairs, `makeKey` signatures, BigDecimal discipline, overload dispatch. This skill does **not** restate it; it produces the *spec* that skill consumes.
-- **Shape the tables** → `socotra-config` schema for `tables/`.
+- **Shape the tables** → the `tables/` schema, distilled in the sibling `socotra-config-from-xlsx` skill's `references/config-schema.md` (§ tables).
 - **Define + parse the workbook** → this document + `references/`.
 
 There is no canonical customer rating template yet, so **this skill defines the format** and ships a
@@ -76,7 +76,8 @@ headers, tell the user what changed, and update the format doc when you finish.
    on any ❌ error** — stop and fix the workbook (or ask the user) before generating anything.
    Surface the contract to the user.
 3. **Emit rate tables.** For each `T - <TableName>` grid, write `socotra-config/tables/<Name>.csv`
-   (or the JSON the schema expects — confirm against the `socotra-config` skill). Column order =
+   (the CSV data) plus `tables/<Name>/config.json` (the column schema — shape in the
+   `socotra-config-from-xlsx` skill's `references/config-schema.md` § tables). Column order =
    the grid header; key columns first.
 4. **Generate the RatePlugin** via the **`socotra-rating-plugin`** skill, driving it from the
    contract: one rated `(element, charge)` per rule, `Handling`→`.rate()`/`.amount()`,
