@@ -37,11 +37,13 @@ Every field type also accepts:
 
 Array field types: `string*` / `string+` (zero-or-more / one-or-more) — used with `multiselect`.
 
-```json
-"data": {
-  "vehicleYear": { "type": "decimal", "displayName": "Year", "min": "1900", "max": "2030" },
-  "middleName":  { "type": "string?", "displayName": "Middle Name", "maxLength": 50 },
-  "vehicleType": { "type": "string", "displayName": "Type", "options": ["Sedan","SUV","Truck"] }
+```jsonc
+{
+  "data": {
+    "vehicleYear": { "type": "decimal", "displayName": "Year", "min": "1900", "max": "2030" },
+    "middleName":  { "type": "string?", "displayName": "Middle Name", "maxLength": 50 },
+    "vehicleType": { "type": "string", "displayName": "Type", "options": ["Sedan","SUV","Truck"] }
+  }
 }
 ```
 
@@ -73,7 +75,7 @@ sub-elements.
 
 Required: `defaultCurrency`, `defaultTimeZone`, `defaultTermDuration`, `defaultDurationBasis`.
 
-```json
+```jsonc
 {
   "defaultCurrency": "USD",
   "defaultTimeZone": "America/New_York",
@@ -91,7 +93,7 @@ convention (annual EU = `years`/`1`; monthly US = `months`/`12` or `6`).
 
 ## `products/<Name>/config.json`
 
-```json
+```jsonc
 {
   "displayName": "Auto Insurance",
   "abstract": false,
@@ -111,7 +113,7 @@ shape as `data`).
 The repeating unit a policy holds many of (Vehicle, Location, Building). `contents` = the
 coverages it carries.
 
-```json
+```jsonc
 {
   "displayName": "Vehicle",
   "abstract": false,
@@ -124,7 +126,7 @@ coverages it carries.
 
 ## `coverages/<Name>/config.json`
 
-```json
+```jsonc
 {
   "displayName": "Liability Coverage",
   "abstract": false,
@@ -140,8 +142,9 @@ Optional: `extend`, `contents` (sub-coverages).
 A term uses EITHER `options` (finite set) OR `value` (free input) — never both. `type` is
 `limit` or `deductible`.
 
-```json
-// options-based — prefix the default key with *
+Options-based — prefix the default key with `*`:
+
+```jsonc
 {
   "type": "deductible",
   "displayName": "Collision Deductible",
@@ -151,7 +154,11 @@ A term uses EITHER `options` (finite set) OR `value` (free input) — never both
     "ded1000": { "displayName": "$1,000","value": 1000 }
   }
 }
-// value-based
+```
+
+Value-based:
+
+```jsonc
 { "type": "limit", "displayName": "Building Limit", "value": { "type": "decimal", "min": "10000", "max": "10000000" } }
 ```
 - **Option keys must be lowercase** (`o_1000000`, `ded500`) — `O_1000000` fails name-format validation. Lowercase the default key too.
@@ -159,7 +166,7 @@ A term uses EITHER `options` (finite set) OR `value` (free input) — never both
 
 ## `charges/<Name>/config.json`
 
-```json
+```jsonc
 { "category": "premium", "handling": "normal", "invoicing": "scheduled", "transactionBundlingEnabled": false }
 ```
 - **`category` is built-in, not extendable**: `premium` | `tax` | `fee` | `surcharge` | `credit` | `nonfinancial`. Remap outside-set template values (`commission` → `nonfinancial`, `discount` → `credit`).
@@ -170,7 +177,7 @@ A term uses EITHER `options` (finite set) OR `value` (free input) — never both
 
 ## `installmentPlans/<Name>/config.json`
 
-```json
+```jsonc
 {
   "displayName": "Monthly Plan",
   "cadence": "monthly",              // fullPay | monthly | quarterly | semiannually | annually
@@ -186,7 +193,7 @@ A term uses EITHER `options` (finite set) OR `value` (free input) — never both
 
 A product's `numberingString`/`numberingTrigger` **require** a numbering plan.
 
-```json
+```jsonc
 { "displayName": "Policy Numbering", "format": "\\P\\O\\L-########", "initialCoreNumber": "10000001" }
 ```
 - **Escape EVERY literal character with `\`** in `format`: `GL-######` → `"\\G\\L-######"` (unescaped letters fail "unrecognized character"). `#` = a sequence digit.
@@ -198,7 +205,7 @@ A product's `numberingString`/`numberingTrigger` **require** a numbering plan.
 Products reference `eligibleAccountTypes`; if the workbook has no account tab, define each
 referenced type here and tell the user you inferred it.
 
-```json
+```jsonc
 {
   "displayName": "Consumer Account",
   "abstract": false,
@@ -213,7 +220,7 @@ Optional: `extend`, `numberingPlan` + `numberingTrigger`, `invoiceNumberingPlan`
 
 ## `tables/<Name>/config.json` (rating lookup tables — used by the rating skills)
 
-```json
+```jsonc
 {
   "selectionTimeBasis": "termStartTime",   // termStartTime | transactionTime | policyStartTime | currentTime
   "columns": {
