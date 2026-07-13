@@ -31,6 +31,8 @@ Check these and **stop to reconcile if any drift**:
 
 If drift is material, derive the mapping from the live headers and **tell the user what changed** rather than silently following stale rules. When you finish a conversion against a changed template, update this skill's tables so the next run starts from a correct baseline.
 
+**Green rows are examples — ignore them.** In this template, rows shaded green are illustrative sample data, not real config, and must be excluded from the conversion. Detect them by cell fill: read the sheet's fill styling (e.g. `xlsx_extract.py ... --styles`/`--fills`, or inspect `xl/styles.xml` + each cell's `s=` style index for a green `fgColor`) and drop any row whose cells carry that green fill. If fill color can't be resolved for a given file, **don't guess** — tell the user you can't distinguish the green example rows and ask them to confirm which rows are examples before building.
+
 ## Tab → entity map (last known good)
 
 The workbook is one row = one entity. Names are PascalCase; quantifier suffixes (`! ? + *`, blank) come straight from the cells. For each entity below, `references/config-schema.md` has the exact `config.json` shape and constraints.
@@ -81,7 +83,7 @@ Write the tree under **`socotra-config/`** at the project root. That is what the
 ### 5 - Coverage Terms (two parts)
 - Part A defines the term (`type`, display, used-on, default option key prefixed `*`). Part B lists each option (key, display, numeric value).
 - **Option keys must be lowercase** snake/`o_1000000`-style — `O_1000000` fails name-format validation. Lowercase the default key too.
-- A term marked **auto-created (`!`)** on its coverage needs a **default option** (`*`). If Part A gives no default and the options include an "Excluded" choice, default to `*..._excluded`. If a term has a single implied option (default key but no Part B rows), synthesize that one option from the key/value.
+- A term marked **mandatory (`!`)** on its coverage needs a **default option** (`*`). If Part A gives no default and the options include an "Excluded" choice, default to `*..._excluded`. If a term has a single implied option (default key but no Part B rows), synthesize that one option from the key/value.
 - The template's `type` may say `other` (e.g. ERP, Credit Monitoring). `references/config-schema.md` documents only `limit`/`deductible`; if `other` is rejected by validation, model it as a `limit` with explicit options (e.g. excluded/included or year choices). Verify against the live schema rather than assuming.
 
 ### 8 - Data Fields
@@ -100,13 +102,68 @@ Write the tree under **`socotra-config/`** at the project root. That is what the
 ### 10 - Installment Plans
 - Map cadence to the schema enum (`fullPay`, `monthly`, `quarterly`, `semiannually`, `annually`); `Max Installments Per Term` → `maxInstallmentsPerTerm`; `Generate Lead Days`/`Due Lead Days` → `generateLeadDays`/`dueLeadDays`. Set `anchorMode` (e.g. `termStartDay`).
 
+## Handling conflicts and gaps — ask, don't assume
+
+The transform rules above tell you *how* to shape valid config; this section governs *when to stop and talk to the user*. Do this pass **after extraction, before building** — and again whenever a `validateConfig` error exposes a fresh conflict or gap. Default to a conversation, not a silent decision.
+
+### Conflicting information → surface it, offer fixes, let the user pick
+
+A conflict is any place the spreadsheet says two incompatible things. Watch especially for:
+- A coverage's `Coverage Terms with Quantifiers` (tab 4) vs. a term's `Used On Coverages` (tab 5) disagreeing about containment.
+- The same entity named two ways (spelling/casing/quantifier) across tabs.
+- A cell that references a tab, plan, account type, or coverage that doesn't exist elsewhere in the workbook.
+- A value that contradicts a rule above (e.g. a charge `category` or `handling`/`invoicing` combo that can't both hold; a default option key with no matching option row).
+- Numbers/settings that can't co-exist (e.g. `maxInstallmentsPerTerm` inconsistent with the stated cadence).
+
+When you find one, **don't quietly pick a side.** Raise it conversationally and lay out the concrete options, e.g.:
+
+> Heads up — tab 4 lists `BodilyInjury` under the `Auto` coverage, but tab 5's `Used On Coverages` for that term only names `Liability`. How should I resolve it?
+> - **A** — Trust tab 4 (attach the term to `Auto`).
+> - **B** — Trust tab 5 (attach it to `Liability` only).
+> - **C** — Take the union (attach to both).
+>
+> I'd lean toward **C** since the two tabs usually drift rather than contradict, but your call.
+
+Use the `AskUserQuestion` tool when the options are clean and enumerable; use plain prose when the conflict needs explaining first. Always include a recommended option with a one-line *why*. Only proceed on your recommendation without an answer if the user has told you to stop asking.
+
+### Missing information → ask first, but offer to decide for them
+
+When a required field, key, quantifier, default option, or inferred entity (account type, numbering plan) is absent, **don't assume a value.** Ask the user — and in the same breath offer to fill it in yourself from Socotra + insurance domain knowledge, so they can delegate if they'd rather not decide. For example:
+
+> The `GeneralLiability` product doesn't list any `eligibleAccountTypes`. Two ways to go:
+> - **Tell me** which account type(s) apply, or
+> - **Let me decide** — for a commercial GL product I'd define a single `Organization` account type and reference it.
+>
+> Which do you prefer?
+
+If the user says "you decide," make the call using the transform rules and your Socotra/insurance knowledge, then **record it as an inferred decision** in the final report (see workflow step 6). If they give an answer, use it verbatim. Never let a gap silently become a guess that isn't flagged.
+
+The specific fallbacks named in the rules above (union of term containment, `*..._excluded` defaults, `commission → nonfinancial`, etc.) are exactly the **recommended options** to present here — not licenses to skip the conversation.
+
+## Never edit the original — version the spreadsheet that represents the config
+
+The workbook is the source of truth for the config, so it must stay in sync with every change (conflict resolution, gap fill, remap) — but the **original file is never modified.** Instead, each round of changes is captured in a new, versioned copy, and each version forks from the *latest* version, not the original:
+
+- **First change** → copy the original and apply the change to the copy. Name it `<original-basename>-agent-v1`. Example: `product-template.xlsx` → `product-template-agent-v1.xlsx`.
+- **Second change** → fork from `...-agent-v1` (not the original) → `product-template-agent-v2.xlsx`.
+- **Nth change** → always base the new copy on `...-agent-v(N-1)`, name it `...-agent-v(N)`.
+
+Rules:
+- A "change" = one coherent round of edits (e.g. everything you resolved in a single conflict+gap pass, or the fixes from one `validateConfig` loop). Don't spawn a version per cell; do spawn one per pass so the history is legible.
+- Always start from the **latest** `-agent-vN` copy — determine N by listing existing `...-agent-v*` files and taking the highest, so versions never collide or reset.
+- The copy must reflect the *decided* values (what the user chose or delegated to you), so the latest version is always a faithful, deployable-intent snapshot of the config.
+- Leave the original and every prior version untouched — they are the audit trail.
+- Writing cells back into an `.xlsx` needs a writer library (e.g. `openpyxl`); the `xlsx-extract` skill is **read-only** and does not do this. If no writer is available, `cp` the latest file to the new version name, tell the user which cells still need updating, and note it in the report rather than silently skipping the version bump.
+
 ## Workflow
 
 1. **Step 0 credibility check** (above) — `--list` + headers + comments; reconcile drift.
 2. Extract every tab (text format) and the comments.
-3. Build `socotra-config/` per the map + transform rules; create inferred entities (accounts, numbering plan).
-4. `./gradlew validateConfig` (the only allowed validation command here). Fix reported errors — most map to a rule above.
-5. Report: what was built, every **inferred/remapped/skipped** decision, and (if the template drifted) what changed + which rules you updated.
+3. **Conflict + gap pass** (above) — scan for contradictions and missing values; ask the user about each, offering options and (for gaps) the "let me decide" path. Collect answers before building.
+4. **Version the spreadsheet** (above) — capture this round's decided changes in the next `...-agent-vN` copy, forked from the latest existing version (or the original, for v1). Never edit the original.
+5. Build `socotra-config/` per the map + transform rules and the user's decisions; create inferred entities (accounts, numbering plan).
+6. `./gradlew validateConfig` (the only allowed validation command here). Fix reported errors — most map to a rule above. If an error exposes a *new* conflict or gap, loop back to step 3 (and bump to the next `-agent-vN` for that round's fixes) rather than guessing.
+7. Report: what was built, the current spreadsheet version name, every **inferred/remapped/skipped** decision (including anything the user asked you to decide), any unresolved questions, and (if the template drifted) what changed + which rules you updated.
 
 Deployment (`createTenant`/`deployConfig`/etc.) is the **user's** to run, not yours.
 
