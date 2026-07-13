@@ -1,6 +1,6 @@
 ---
 name: socotra-rating-from-xlsx
-description: Turn a filled-out Socotra "Rating workbook" (.xlsx) into a deployable rater — rate-table CSVs plus a RatePlugin — for the active socotra-config. Bridges four things: the xlsx-extract skill (reads the file), this skill (defines the config-agnostic rating workbook format + a readable formula DSL and parses it into an auditable rating contract), the socotra-rating-plugin skill (turns the contract into valid BigDecimal Java), and the rate-table schema (distilled in the sibling socotra-config-from-xlsx skill's references/config-schema.md). Use whenever a user hands you a Socotra rating spreadsheet — or needs the blank framework to fill one out. The workbook layout is NOT a contract — re-verify it against the actual file every time.
+description: 'Turn a filled-out Socotra "Rating workbook" (.xlsx) into a deployable rater — rate-table CSVs plus a RatePlugin — for the active socotra-config. Bridges four things: the xlsx-extract skill (reads the file), this skill (defines the config-agnostic rating workbook format + a readable formula DSL and parses it into an auditable rating contract), the socotra-rating-plugin skill (turns the contract into valid BigDecimal Java), and the rate-table schema (distilled in the sibling socotra-config-from-xlsx skill''s references/config-schema.md). Use whenever a user hands you a Socotra rating spreadsheet — or needs the blank framework to fill one out. The workbook layout is NOT a contract — re-verify it against the actual file every time.'
 ---
 
 # socotra-rating-from-xlsx

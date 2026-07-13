@@ -1,6 +1,6 @@
 ---
 name: socotra-config-from-xlsx
-description: Turn a Socotra "Config Template" Excel workbook into a deployable socotra-config. Bridges the xlsx-extract skill (reads the file) with this skill, which maps tabs/columns → config entities, carries the per-entity JSON schema for the common path (references/config-schema.md), and records the transform rules that make validateConfig pass. Use whenever a user hands you a Socotra business-requirements .xlsx and asks for a config. IMPORTANT: the template layout is NOT a contract — re-verify it against the actual file every time before trusting the mapping below.
+description: 'Turn a Socotra "Config Template" Excel workbook into a deployable socotra-config. Bridges the xlsx-extract skill (reads the file) with this skill, which maps tabs/columns → config entities, carries the per-entity JSON schema for the common path (references/config-schema.md), and records the transform rules that make validateConfig pass. Use whenever a user hands you a Socotra business-requirements .xlsx and asks for a config. IMPORTANT: the template layout is NOT a contract — re-verify it against the actual file every time before trusting the mapping below.'
 ---
 
 # socotra-config-from-xlsx
