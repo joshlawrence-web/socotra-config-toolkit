@@ -25,8 +25,8 @@ SECTIONS = {
 # sections whose entities other entities may reference via contents
 CONTAINABLE = {"policyLines", "exposureGroups", "exposures", "coverages"}
 CHARGE_CATEGORIES = {"premium", "tax", "fee", "surcharge", "credit", "nonfinancial"}
-# observed valid in deployed tenant configs: int, datetime (schema doc understates)
-FIELD_TYPES = {"string", "decimal", "boolean", "date", "timestamp", "int", "datetime"}
+# docs.socotra.com data-extension-types: built-in set (no "timestamp", no "integer")
+FIELD_TYPES = {"string", "int", "long", "decimal", "datetime", "date", "boolean", "object"}
 PLATFORM_FIELDS = {
     "policyStartDate", "policyEndDate", "effectiveDate", "expirationDate",
     "policyNumber", "quoteNumber", "policyId", "status", "state",
@@ -128,9 +128,12 @@ def check_term(where, body, lint: Lint):
         for key in body["options"]:
             k = key.lstrip("*")
             defaults += key.startswith("*")
-            # documented failure is uppercase START (O_1000000); camelCase deploys fine
+            # docs (identifiers page): any Java identifier is legal; but O_1000000
+            # was observed rejected by validateConfig once — warn, let remote decide
             if k and k[0].isupper():
-                lint.err(f"{where}.options.{key}", "option key must start lowercase (uppercase start fails name-format validation)")
+                lint.warn(f"{where}.options.{key}", "option key starts uppercase — docs allow it, but an uppercase-start key was once rejected by validateConfig; prefer lowercase start")
+            if not re.fullmatch(r"[A-Za-z_]\w*", k):
+                lint.err(f"{where}.options.{key}", "option key must be a valid identifier (start letter/underscore, then letters/digits/underscores)")
         if defaults > 1:
             lint.err(where, "more than one default (*) option")
 
@@ -260,8 +263,9 @@ def demo():
         lint = lint_config(root)
         blob = "\n".join(lint.errors)
         for expected in ("Agent", "integer", '"min" must be a STRING', "FullPay",
-                         "lowercase", "no default (*) option", "not allowed with handling"):
+                         "no default (*) option", "not allowed with handling"):
             assert expected in blob, f"missed rule: {expected}\n{blob}"
+        assert any("starts uppercase" in w for w in lint.warnings), "missed uppercase-start warning"
         assert not any("Liability" in e for e in lint.errors)
     print("selftest OK")
 

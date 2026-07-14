@@ -13,7 +13,7 @@ file, then fix this reference.
 
 ## Universal rules (memorise these — most validation failures are here)
 
-- **Never `integer`** — fails with "type [Integer] is not defined". Prefer `decimal` for numbers; deployed configs show `int` and `datetime` are also accepted, and custom types defined under `dataTypes/<Name>/` are referenceable as field types.
+- **Never `integer`** — fails with "type [Integer] is not defined". The built-in set (docs: data-extension-types) is `string`, `int`, `long`, `decimal`, `datetime`, `date`, `boolean`, `object` — use `decimal` for anything financial. Custom types defined under `dataTypes/<Name>/` are also referenceable as field types (quantifiers allowed, e.g. `Driver+`).
 - **`min` / `max` are STRINGS**, not numbers: `"min": "0"` not `"min": 0`. (Applies to decimal + date.)
 - **Every concrete entity needs `"abstract": false`.** `abstract: true` = a base template only `extend`ed, never instantiated.
 - **Optional field** = append `?` to the type: `"type": "string?"`.
@@ -23,11 +23,13 @@ file, then fix this reference.
 
 | Type | Constraints |
 |------|-------------|
-| `string` | `minLength`, `maxLength` (numbers), `regex`, `options` (array of allowed values) |
+| `string` | `minLength`, `maxLength` (numbers, cap 20000), `regex`, `options` (array of allowed values) |
+| `int` / `long` | 32-/64-bit signed integers |
 | `decimal` | `min`, `max` (strings), `precision` (number), `roundingMode` (`ceiling`/`down`/`floor`/`halfDown`/`halfEven`/`halfUp`/`up`) |
-| `boolean` | none |
+| `boolean` | none (accepts `0`/`1`) |
 | `date` | `min`, `max` (ISO strings, e.g. `"2020-01-01"`) |
-| `timestamp` | date + time |
+| `datetime` | date + time, ISO8601, policy time zone context |
+| `object` | multiple properties; property shapes not definable in tenant config |
 
 Every field type also accepts:
 - `displayName` (string) — human label.
@@ -154,7 +156,7 @@ A term uses EITHER `options` (finite set) OR `value` (free input) — never both
 // value-based
 { "type": "limit", "displayName": "Building Limit", "value": { "type": "decimal", "min": "10000", "max": "10000000" } }
 ```
-- **Option keys must start lowercase** (`o_1000000`, `ded500`) — `O_1000000` fails name-format validation. camelCase after the first character deploys fine (`zeroDeductible` observed live). Same rule for the default key.
+- **Option keys are identifiers** (docs: identifiers page — Java identifier rules: start letter/underscore, then letters/digits/underscores; applies to entity, term, option, charge, field names alike). Docs impose no case rule, but `O_1000000` was once rejected by validateConfig while `zeroDeductible` deploys fine — prefer a lowercase start; treat an uppercase start as a verify-against-validateConfig, not an auto-reject.
 - A `!` term on its coverage needs a default option (`*`).
 
 ## `charges/<Name>/config.json`
@@ -162,7 +164,7 @@ A term uses EITHER `options` (finite set) OR `value` (free input) — never both
 ```json
 { "category": "premium", "handling": "normal", "invoicing": "scheduled", "transactionBundlingEnabled": false }
 ```
-- **`category` core set**: `premium` | `tax` | `fee` | `surcharge` | `credit` | `nonfinancial`. Remap template values outside it (`commission` → `nonfinancial`, `discount` → `credit`) — though deployed configs show extra categories exist (`invoiceFee`, `nonFinancial`), so treat an unknown category as verify-against-validateConfig, not auto-reject.
+- **`category`**: docs (features/financials/charges) list exactly six built-ins — `premium` | `tax` | `fee` | `surcharge` | `credit` | `nonfinancial` — and state categories "are defined by Socotra and aren't extendable". Remap template values outside it (`commission` → `nonfinancial`, `discount` → `credit`). Caveat: a real deployed config carries `invoiceFee` and `nonFinancial`, so the platform accepts more than the docs admit (docs lag or case-insensitivity) — treat an unknown category as verify-against-validateConfig, not auto-reject.
 - `handling`: `normal` | `flat`. `invoicing`: `immediate` | `next` | `scheduled`.
 - **`invoicing: immediate` (and `next`) is NOT allowed with `handling: normal`** — use `handling: flat` for immediate fees.
 - `nonfinancial` charges are tracked but never invoiced (commissions, technical premium).
