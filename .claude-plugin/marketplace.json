@@ -10,7 +10,7 @@
       "name": "socotra-config-toolkit",
       "source": ".",
       "description": "End-to-end Socotra EC toolchain: xlsx → config + rate tables → Java plugins → local verify.",
-      "version": "0.2.0",
+      "version": "0.2.1",
       "license": "MIT",
       "keywords": [
         "socotra",

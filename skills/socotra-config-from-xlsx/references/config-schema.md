@@ -13,7 +13,7 @@ file, then fix this reference.
 
 ## Universal rules (memorise these — most validation failures are here)
 
-- **`decimal` for ALL numbers, never `integer`.** `integer` fails with "type [Integer] is not defined".
+- **Never `integer`** — fails with "type [Integer] is not defined". Prefer `decimal` for numbers; deployed configs show `int` and `datetime` are also accepted, and custom types defined under `dataTypes/<Name>/` are referenceable as field types.
 - **`min` / `max` are STRINGS**, not numbers: `"min": "0"` not `"min": 0`. (Applies to decimal + date.)
 - **Every concrete entity needs `"abstract": false`.** `abstract: true` = a base template only `extend`ed, never instantiated.
 - **Optional field** = append `?` to the type: `"type": "string?"`.
@@ -154,7 +154,7 @@ A term uses EITHER `options` (finite set) OR `value` (free input) — never both
 // value-based
 { "type": "limit", "displayName": "Building Limit", "value": { "type": "decimal", "min": "10000", "max": "10000000" } }
 ```
-- **Option keys must be lowercase** (`o_1000000`, `ded500`) — `O_1000000` fails name-format validation. Lowercase the default key too.
+- **Option keys must start lowercase** (`o_1000000`, `ded500`) — `O_1000000` fails name-format validation. camelCase after the first character deploys fine (`zeroDeductible` observed live). Same rule for the default key.
 - A `!` term on its coverage needs a default option (`*`).
 
 ## `charges/<Name>/config.json`
@@ -162,7 +162,7 @@ A term uses EITHER `options` (finite set) OR `value` (free input) — never both
 ```json
 { "category": "premium", "handling": "normal", "invoicing": "scheduled", "transactionBundlingEnabled": false }
 ```
-- **`category` is built-in, not extendable**: `premium` | `tax` | `fee` | `surcharge` | `credit` | `nonfinancial`. Remap outside-set template values (`commission` → `nonfinancial`, `discount` → `credit`).
+- **`category` core set**: `premium` | `tax` | `fee` | `surcharge` | `credit` | `nonfinancial`. Remap template values outside it (`commission` → `nonfinancial`, `discount` → `credit`) — though deployed configs show extra categories exist (`invoiceFee`, `nonFinancial`), so treat an unknown category as verify-against-validateConfig, not auto-reject.
 - `handling`: `normal` | `flat`. `invoicing`: `immediate` | `next` | `scheduled`.
 - **`invoicing: immediate` (and `next`) is NOT allowed with `handling: normal`** — use `handling: flat` for immediate fees.
 - `nonfinancial` charges are tracked but never invoiced (commissions, technical premium).

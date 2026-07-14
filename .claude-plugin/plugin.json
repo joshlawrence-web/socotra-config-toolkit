@@ -1,7 +1,7 @@
 {
   "name": "socotra-config-toolkit",
   "displayName": "Socotra Config Toolkit",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "description": "End-to-end toolchain for Socotra Enterprise Core: turn business-requirements spreadsheets into deployable product configs and rate tables, write valid rating/validation/underwriting Java plugins, and verify them locally before deploy.",
   "author": {
     "name": "Josh Lawrence",

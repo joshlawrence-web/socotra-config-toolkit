@@ -162,10 +162,27 @@ Rules:
 3. **Conflict + gap pass** (above) — scan for contradictions and missing values; ask the user about each, offering options and (for gaps) the "let me decide" path. Collect answers before building.
 4. **Version the spreadsheet** (above) — capture this round's decided changes in the next `...-agent-vN` copy, forked from the latest existing version (or the original, for v1). Never edit the original.
 5. Build `socotra-config/` per the map + transform rules and the user's decisions; create inferred entities (accounts, numbering plan).
-6. `./gradlew validateConfig` (the only allowed validation command here). Fix reported errors — most map to a rule above. If an error exposes a *new* conflict or gap, loop back to step 3 (and bump to the next `-agent-vN` for that round's fixes) rather than guessing.
+6. **Validate — tiered** (see "Validation without tenant credentials" below). Always run the local lint first; run `./gradlew validateConfig` (the only allowed gradle validation command here) when tenant credentials exist. Fix reported errors — most map to a rule above. If an error exposes a *new* conflict or gap, loop back to step 3 (and bump to the next `-agent-vN` for that round's fixes) rather than guessing.
 7. Report: what was built, the current spreadsheet version name, every **inferred/remapped/skipped** decision (including anything the user asked you to decide), any unresolved questions, and (if the template drifted) what changed + which rules you updated.
 
 Deployment (`createTenant`/`deployConfig`/etc.) is the **user's** to run, not yours.
+
+## Validation without tenant credentials
+
+`./gradlew validateConfig` is **remote**: it zips the bundle and uploads it to the tenant kernel API, so it needs `apiUrl` + `tenantLocator` + `personalAccessToken` in the SDK project's `settings.gradle.kts` (plus `GITHUB_USER`/`GITHUB_TOKEN` just to resolve the gradle plugin). Users may not want to hand these over.
+
+**Detect first, never assume.** Before invoking gradle, check the SDK project:
+```bash
+grep -E 'tenantLocator|personalAccessToken|apiUrl' settings.gradle.kts
+```
+Credentials are *absent* when the block is missing, values are empty/placeholder, or they read from env vars (`System.getenv`) that aren't set. Don't run `validateConfig` just to see it fail — and never ask the user to paste a PAT into chat.
+
+**Tiered validation:**
+1. **Tier 1 — local lint (always, no credentials):** `python3 <this skill>/scripts/lint_config.py socotra-config`. Stdlib-only; encodes the failure classes in `references/config-schema.md` (types, name formats, dangling references, `!`-term defaults, charge handling/invoicing, numbering escapes) plus orphan detection. Exit 0 = clean.
+2. **Tier 2 — remote `validateConfig` (when credentials exist):** the authority. Run it and fix; on disagreement with the lint, the remote result wins — then fix the lint/reference.
+3. **No credentials:** deliver after a clean Tier 1, and say exactly this in the report: *locally linted only — remote `validateConfig` still required before deploy* (user runs it themselves, or supplies locator + PAT). Never present a lint-only config as validated.
+
+**Credential hygiene:** if the user does provide credentials, put them in env vars read via `System.getenv(...)` in `settings.gradle.kts` — never hardcode a PAT into a file that gets committed, and never echo a PAT into output or logs.
 
 ## Maintenance
 
