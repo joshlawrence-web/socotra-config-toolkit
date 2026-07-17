@@ -40,6 +40,7 @@ Ground truth + tooling for valid Socotra plugin Java. This skill covers the **pl
 
 ## Platform-wide gotchas
 
+- **Request records are NESTED types on the generated plugin interface — never coremodel imports.** `preCommit(DelinquencyRequest)` takes `PreCommitPlugin.DelinquencyRequest` from the customer package; `import com.socotra.coremodel.DelinquencyRequest` does not exist and will not compile. This trap is invisible in docs.socotra.com examples because their snippets sit inside the customer package and show no imports. Rule: request types (`*Request`) come from the interface you're implementing; response types (`PreCommitDelinquencyResponse`, `RatingSet`, ...) and entities (`Delinquency`, `Policy`, ...) come from `com.socotra.coremodel`. When unsure, `javap -cp customer-config.jar 'com.socotra.deployment.customer.<Interface>$<Name>Request'`.
 - **No Money class.** Monetary values are plain `BigDecimal`; `MoneyService` only rounds to currency scale (HALF_EVEN platform-wide).
 - **Deprecated — do not use**: `DataFetcher.getSegments(ULID)` (use `getSegmentByTransaction`), 2-arg `TimeService.calculateDuration` (miscomputes mid-term segments — use 3-arg form).
 - **Generics need product context**: `<T> T getQuote(...)` returns your generated type; the cast target comes from the customer package, so always confirm the product's type names via `scan_plugins.py`/`build_catalog.py` or the project's `build/customer-config-source.jar`.
