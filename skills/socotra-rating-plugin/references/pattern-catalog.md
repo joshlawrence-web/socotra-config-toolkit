@@ -98,7 +98,7 @@ public RatingSet rate(CommercialPropertyQuoteRequest request) {
     ResourceSelector sel = ResourceSelector.get(quote);
     List<RatingItem> items = new ArrayList<>();
 
-    for (LocationQuote loc : quote.locations()) {            // confirm accessor via build_catalog.py
+    for (LocationQuote loc : quote.locations()) {            // confirm accessor via the socotra-jar-building-block skill's JAR introspection
         BigDecimal locPremium = priceLocation(loc, sel);
         items.add(RatingItem.builder()
             .elementLocator(loc.locator())                  // charge lands on the exposure, not the product

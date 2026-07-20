@@ -18,7 +18,7 @@ Every `RatingItem` carries **either** a `rate` **or** an `amount` — never both
 | `flat` | `.amount(value)` | a **fixed amount**, applied once, not scaled by duration (policy fees, invoice fees). |
 | `retention` | `.amount(value)` | a fixed amount used by `CancellationPlugin` for retention charges. |
 
-Get this wrong and `RatingItem`'s canonical constructor throws at construction time (`amount is required for charge 'X' but it is null`, or the symmetric rate error). **`handling` is not in the JAR** — it is a config fact. `derive_rating_contract.py` reads it for you and tags each charge. Do not infer it from the charge's *name* (`Fee`/`PolicyFee` are often `normal`, not `flat`; see term-life, which rates its `fees` charge with `.rate()` because it declares no `handling`).
+Get this wrong and `RatingItem`'s canonical constructor throws at construction time (`amount is required for charge 'X' but it is null`, or the symmetric rate error). **`handling` is not in the JAR** — it is a config fact. Read it from each charge's `charges/<Name>/config.json` and tag the charge (the SKILL.md contract-derivation method does this). Do not infer it from the charge's *name* (`Fee`/`PolicyFee` are often `normal`, not `flat`; see term-life, which rates its `fees` charge with `.rate()` because it declares no `handling`).
 
 ### Rate is per-duration-unit — converting a target total
 
@@ -48,7 +48,7 @@ Each product/exposure/coverage declares a `charges: [...]` array naming the char
 
 ## The overload set: which method fires when
 
-`RatePlugin` dispatches by request type (all methods are `default` no-ops; override only what you implement). For each product the JAR generates (confirm exact names with `scan_plugins.py`):
+`RatePlugin` dispatches by request type (all methods are `default` no-ops; override only what you implement). For each product the JAR generates (confirm exact names by using the `socotra-jar-building-block` skill to introspect the JAR):
 
 - `rate(<Product>QuoteRequest)` — a full quote is priced. Request exposes `quote()`, `duration()`, `durationBasis()`.
 - `rate(<Product>QuickQuoteRequest)` — a quick quote (a lighter quote shape). Generated for every concrete product.

@@ -10,12 +10,11 @@ three rules. Use it as a reference for filling the blank framework against an ac
 - `contract.html` — the auditable rating contract (open in a browser).
 - `contract.json` — same contract, machine-readable (drives the RatePlugin generator).
 
-Regenerate the contract after editing the workbook:
-
-```bash
-python3 scripts/parse_rating_workbook.py examples/cgl/cgl-rating.xlsx \
-  --out examples/cgl/contract.html --json examples/cgl/contract.json
-```
+After editing the workbook, regenerate the contract by hand: read `cgl-rating.xlsx` with the
+`xlsx-extract` method, parse the formula DSL and assemble the rating contract per
+`references/formula-dsl.md` ("Parsing the workbook into the rating contract"), then write the
+updated `contract.json` / `contract.html` yourself. There is no script — the parse is done by
+reading and reasoning.
 
 ## What it rates
 
