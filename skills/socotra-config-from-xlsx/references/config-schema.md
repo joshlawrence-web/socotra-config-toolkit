@@ -11,6 +11,31 @@ file, then fix this reference.
 
 ---
 
+## Keep this schema current with the Socotra Release Notes
+
+Socotra ships config/schema changes continuously, so this distilled reference goes stale.
+Before relying on it for a build, check the **Socotra Release Notes**
+(<https://docs.socotra.com/other-resources/release-notes>) and fold anything that affects
+entity shapes, field names, quantifiers, validation rules, or new/removed sections into
+this file.
+
+**Last reviewed: 2026-07-16** ← update this date each time you finish a review.
+
+Which entries to read (don't re-read everything):
+- **Newer than the "Last reviewed" date above** — genuinely new changes since the last pass.
+- **Dated in the future** — planned/upcoming releases. These entries get **edited
+  repeatedly** as the release firms up, so re-read them on every pass (even if their date
+  is unchanged) until their release date has passed.
+
+Skip entries dated on or before the "Last reviewed" date whose release date is already in
+the past — those were captured on a previous pass.
+
+After the review: apply any relevant changes to this file, then set **Last reviewed** to
+today's date. If a release note is ambiguous or you can't tell whether it affects the
+schema, note it to the user rather than guessing — and remember `validateConfig` still wins.
+
+---
+
 ## How the entities compose (read this before building a multi-level product)
 
 The folders are **flat** — every entity lives at `socotra-config/<section>/<Name>/`, never physically nested. The product *tree* is expressed **by reference**: a parent names its children (with a quantifier) in its `contents` / `coverageTerms` / `charges` arrays. Wiring a config = defining leaf entities, then naming them upward.
