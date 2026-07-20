@@ -1,11 +1,12 @@
 ---
 name: socotra-verify-deploy
-description: Pre-deploy verifier for Socotra EC plugin projects — compiles plugin Java against the generated customer-config.jar to catch errors locally before a tenant round-trip. Use as a verify-in-loop step after writing or editing any Socotra plugin (rating, validation, underwriting, precommit, automation, document) and before deploying. Reuses the project's own gradle compileJava; warns when the generated config jar is stale; flags untyped JsonNode string refs.
+disable-model-invocation: true
+description: Pre-deploy verifier for Socotra EC plugin projects — compiles plugin Java against the generated customer-config.jar to catch errors locally before a tenant round-trip. EXECUTES CODE (gradle/javac + a Python script), so it is invoked explicitly by the user, never automatically. Run it after writing or editing any Socotra plugin (rating, validation, underwriting, precommit, automation, document) and before deploying. Reuses the project's own gradle compileJava; warns when the generated config jar is stale; flags untyped JsonNode string refs.
 ---
 
 # Socotra verify-deploy
 
-A local gate that answers **"will this plugin compile against the config it deploys to?"** without round-tripping to a tenant. Run it after every plugin edit and before any deploy. It's the verify half of a write→verify loop.
+A local gate that answers **"will this plugin compile against the config it deploys to?"** without round-tripping to a tenant. Because it executes code (gradle/javac + a Python script), it runs only when **you invoke it explicitly** — it is not triggered automatically. Run it after every plugin edit and before any deploy; it's the verify half of a write→verify loop.
 
 ## Why it works
 
