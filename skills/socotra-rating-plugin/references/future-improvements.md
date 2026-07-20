@@ -3,6 +3,11 @@
 Running notes on gaps observed while using this skill on real configs. Each entry: what
 happened, why it matters, and a concrete fix. Append as new cases surface.
 
+> The resolved entries below were originally fixes to a `derive_rating_contract.py` script
+> (since retired). That script's logic now lives as the reading-and-reasoning method in
+> SKILL.md ("Derive the rating contract by reading the config"); the lessons are preserved
+> there. Entries are kept for the reasoning, reworded to describe the derivation *method*.
+
 ---
 
 ## Open
@@ -13,33 +18,34 @@ _(none)_
 
 ## Resolved
 
-### 1. `derive_rating_contract.py` did not resolve `policyLines/` — fixed 2026-06-19
+### 1. Element walk did not resolve `policyLines/` — fixed 2026-06-19
 
 A PersonalAuto product whose `contents` pointed at a **policy line**
-(`policyLines/PersonalAutoLine`, itself containing `PersonalVehicle+` → PA coverages) emitted
-`PersonalAutoLine | UNRESOLVED` and silently dropped the entire vehicle + coverage subtree,
-leaving the PA contract nearly empty.
+(`policyLines/PersonalAutoLine`, itself containing `PersonalVehicle+` → PA coverages) was
+emitted as `PersonalAutoLine | UNRESOLVED`, silently dropping the entire vehicle + coverage
+subtree and leaving the PA contract nearly empty.
 
-**Fix applied:** `Config` now loads `policyLines/` and registers them in the element lookup
-(kind `policyLine`), so `lookup_element` resolves a policy-line ref and `walk_element_tree`
-recurses into its `contents`/`charges` like any exposure. The policy line is treated as a
-chargeable element in its own right. Verified on the PA+CGL config: the full
-`PersonalAutoLine → PersonalVehicle → PA*` subtree now renders.
+**Fix (now baked into the method):** the element lookup loads `policyLines/` and registers them
+(kind `policyLine`), so a policy-line ref resolves and the walk recurses into its
+`contents`/`charges` like any exposure. The policy line is treated as a chargeable element in
+its own right. Verified on the PA+CGL config: the full `PersonalAutoLine → PersonalVehicle →
+PA*` subtree renders. (See Step 0 / Step 4 of the SKILL.md derivation method.)
 
 ### 2. Name heuristics broke on ALL-CAPS / acronym names — fixed 2026-06-19
 
-`_camel` lower-cased the first letter unconditionally, producing `ChargeType.gST` (real:
-`ChargeType.GST`) and accessor guesses `cGLBodilyInjury()` (real: `CGLBodilyInjury()`), the
-latter then flagged with a **false ✗ "accessor NOT found"** — telling users to fix correct code.
+The config→Java name rule originally lower-cased the first letter unconditionally, producing
+`ChargeType.gST` (real: `ChargeType.GST`) and accessor guesses `cGLBodilyInjury()` (real:
+`CGLBodilyInjury()`), the latter then flagged with a **false ✗ "accessor NOT found"** — telling
+users to fix correct code.
 
-**Fix applied:**
-- `_camel` now preserves a leading run of 2+ capitals verbatim (`GST` → `GST`,
+**Fix (now baked into the method):**
+- The name rule preserves a leading run of 2+ capitals verbatim (`GST` → `GST`,
   `CGLBodilyInjury` → `CGLBodilyInjury`, `PABodilyInjury` → `PABodilyInjury`) and only
-  lower-cases a single leading capital (`PersonalVehicle` → `personalVehicle`).
-- `_verify_in_catalog` matches **case-insensitively**, so a remaining casing difference vs the
-  JAR no longer yields a false ✗.
-- Legend reworded from "✗ = NOT found — fix the accessor" to "✗ = could not confirm — verify
-  the accessor name/path against the JAR."
+  lower-cases a single leading capital (`PersonalVehicle` → `personalVehicle`). (SKILL.md Step 3.)
+- Accessor confirmation against the JAR is matched **case-insensitively**, so a remaining casing
+  difference vs the JAR does not yield a false ✗.
+- Wording is "could not confirm — verify the accessor name/path against the JAR," not
+  "NOT found — fix the accessor."
 
 Verified: charges table emits `ChargeType.GST`; PA/CGL coverage accessors render verbatim.
 
