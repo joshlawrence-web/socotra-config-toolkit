@@ -4,6 +4,8 @@ A Claude Code plugin that bundles six interlocking [Agent Skills](https://code.c
 
 The skills are deliberately small and **soft‑coupled**: none of them `import` another. Instead each one *names* the skills it hands off to (in its description and body), so Claude knows when to chain them. You can invoke any single skill on its own, or let Claude walk the whole pipeline.
 
+**Related (separate marketplace):** guided Word → Velocity **document template** authoring is not in this plugin — install [`socotra-template-authoring@socotra-template`](https://github.com/joshlawrence-web/socotra-template-authoring) so that agent surface stays thin and does not load the converter engine.
+
 ## Install
 
 ```text
